@@ -1,45 +1,56 @@
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid } from '@react-three/drei';
-import { useState } from 'react';
-import { Vector3 } from 'three';
-import { Hexagon } from './Hexagon';
-import { HexGrid } from './HexGrid';
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Grid } from "@react-three/drei";
+import { useState } from "react";
+import { Vector3 } from "three";
+import { Hexagon } from "./Hexagon";
+import { HexGrid } from "./HexGrid";
+import {
+  DEFAULT_PALETTE_TYPE,
+  EnvironmentPalette,
+  EnvironmentType,
+} from "../palette";
 
 export interface HexCoord {
   q: number;
   r: number;
+  type: EnvironmentType;
 }
 
 export function HexagonalField() {
+  const [selectedType, setSelectedType] =
+    useState<EnvironmentType>(DEFAULT_PALETTE_TYPE);
+
   const [hexagons, setHexagons] = useState<HexCoord[]>([
-    { q: 0, r: 0 },
-    { q: 1, r: 0 },
-    { q: 0, r: 1 },
-    { q: -1, r: 1 },
+    { q: 0, r: 0, type: "Empty" },
+    { q: 1, r: 0, type: "Empty" },
+    { q: 0, r: 1, type: "Empty" },
+    { q: -1, r: 1, type: "Empty" },
   ]);
 
-  const addHexagon = (coord: HexCoord) => {
-    const exists = hexagons.some(h => h.q === coord.q && h.r === coord.r);
+  const addHexagon = (coord: Omit<HexCoord, "type">) => {
+    const exists = hexagons.some((h) => h.q === coord.q && h.r === coord.r);
     if (!exists) {
-      setHexagons([...hexagons, coord]);
+      setHexagons([...hexagons, { ...coord, type: selectedType }]);
     }
   };
 
   const removeHexagon = (coord: HexCoord) => {
-    setHexagons(hexagons.filter(h => !(h.q === coord.q && h.r === coord.r)));
+    setHexagons(hexagons.filter((h) => !(h.q === coord.q && h.r === coord.r)));
   };
 
   const hexToWorld = (q: number, r: number): Vector3 => {
     const size = 1;
-    const x = size * (Math.sqrt(3) * q + Math.sqrt(3) / 2 * r);
-    const z = size * (3 / 2 * r);
+    const x = size * (Math.sqrt(3) * q + (Math.sqrt(3) / 2) * r);
+    const z = size * ((3 / 2) * r);
     return new Vector3(x, 0, z);
   };
 
   return (
     <div className="w-full h-screen bg-slate-900">
       <div className="absolute top-4 left-4 z-10 bg-slate-800/90 backdrop-blur-sm p-4 rounded-lg border border-slate-700 shadow-xl">
-        <h1 className="text-xl font-bold text-white mb-2">Hexagonal Field Builder</h1>
+        <h1 className="text-xl font-bold text-white mb-2">
+          Hexagonal Field Builder
+        </h1>
         <div className="text-sm text-slate-300 space-y-1">
           <p>• Click hexagons to remove them</p>
           <p>• Click grid positions to add new hexagons</p>
@@ -48,6 +59,30 @@ export function HexagonalField() {
         </div>
         <div className="mt-3 pt-3 border-t border-slate-600">
           <p className="text-sm text-slate-400">Hexagons: {hexagons.length}</p>
+        </div>
+        <h2 className="text-lg font-bold text-white mt-4 mb-2 border-t border-slate-700 pt-2">
+          Palette
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(EnvironmentPalette).map(([key, env]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedType(key as EnvironmentType)}
+              className={`px-3 py-1 text-sm font-medium rounded-full transition-colors 
+                ${
+                  selectedType === key
+                    ? "bg-blue-500 text-white shadow-lg"
+                    : "bg-slate-700 text-slate-300 hover:bg-blue-600"
+                }`}
+            >
+              {env.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-3 pt-3 border-t border-slate-600">
+          <p className="text-sm text-slate-400">Hexagons: {hexagons.length}</p>
+          <p className="text-sm text-slate-400">Placing: <span className="font-semibold text-blue-300">{EnvironmentPalette[selectedType].name}</span></p>
         </div>
       </div>
 
@@ -58,7 +93,7 @@ export function HexagonalField() {
         }}
         shadows
       >
-        <color attach="background" args={['#0f172a']} />
+        <color attach="background" args={["#0f172a"]} />
 
         {/* Lighting */}
         <ambientLight intensity={0.4} />
@@ -96,6 +131,8 @@ export function HexagonalField() {
               key={`${hex.q}-${hex.r}`}
               position={pos}
               coord={hex}
+              // Pass the type prop
+              type={hex.type} // <--- New prop
               onRemove={() => removeHexagon(hex)}
               index={index}
             />

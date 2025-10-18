@@ -15,7 +15,7 @@ export function HexGrid({ hexToWorld, onGridClick }: HexGridProps) {
   for (let q = -gridRadius; q <= gridRadius; q++) {
     for (let r = -gridRadius; r <= gridRadius; r++) {
       if (Math.abs(q + r) <= gridRadius) {
-        hexagons.push({ q, r });
+        hexagons.push({ q, r, type: 'Empty' });
       }
     }
   }
