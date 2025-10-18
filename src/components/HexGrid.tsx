@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Mesh, Vector3, BufferGeometry, LineBasicMaterial } from 'three';
+import { Mesh, Vector3 } from 'three';
 import { HexCoord } from './HexagonalField';
 
 interface HexGridProps {
@@ -65,11 +65,10 @@ function HexGridCell({ coord, position, onGridClick }: HexGridCellProps) {
   const points = createHexOutline();
 
   return (
-    <group position={[position.x, -0.05, position.z]}>
+    <group position={[position.x, 0, position.z]}>
       {/* Invisible clickable surface */}
       <mesh
         ref={meshRef}
-        rotation={[-Math.PI / 2, 0, 0]}
         onClick={(e) => {
           e.stopPropagation();
           onGridClick(coord);
@@ -84,7 +83,7 @@ function HexGridCell({ coord, position, onGridClick }: HexGridCellProps) {
           document.body.style.cursor = 'default';
         }}
       >
-        <cylinderGeometry args={[0.85, 0.85, 0.01, 6]} />
+        <cylinderGeometry args={[0.9, 0.9, 0.1, 6]} />
         <meshBasicMaterial
           color={hovered ? '#22d3ee' : '#334155'}
           opacity={hovered ? 0.3 : 0.1}
@@ -93,7 +92,7 @@ function HexGridCell({ coord, position, onGridClick }: HexGridCellProps) {
       </mesh>
 
       {/* Hexagon outline */}
-      <line>
+      <lineSegments>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
@@ -108,7 +107,7 @@ function HexGridCell({ coord, position, onGridClick }: HexGridCellProps) {
           transparent
           linewidth={1}
         />
-      </line>
+      </lineSegments>
     </group>
   );
 }
